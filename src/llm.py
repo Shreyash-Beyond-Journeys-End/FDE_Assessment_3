@@ -85,9 +85,7 @@ def chat(
         try:
             response = get_client().chat.completions.create(**kwargs)
         except MissingApiKeyError:
-            # A missing key is a setup mistake, not a flaky network. Retrying it
-            # and then quietly falling back to the rules would hide the fact
-            # that no model ran at all.
+            # setup mistake, not a flaky network - don't retry or fall back silently
             raise
         except Exception as exc:
             last_error = exc

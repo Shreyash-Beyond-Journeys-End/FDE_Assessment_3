@@ -33,8 +33,7 @@ def fetch_vendor_risk(vendor_name: str) -> dict:
     guess whether the data is real.
     """
     last_error = "unknown error"
-    # One extra attempt covers a cold start; a 503 is a deliberate outage in the
-    # mock service, so there is no point retrying that one.
+    # a 503 is a deliberate outage in the mock service, so that one isn't retried below
     for attempt in range(VENDOR_API_RETRIES + 1):
         try:
             data = get_vendor_risk(vendor_name)

@@ -14,9 +14,7 @@ from src.tools import Toolbox
 MAX_EXTRA_FLAGS = 3
 MAX_EXTRA_MISSING = 3
 
-# Flags this module raises itself. They are not in the model's vocabulary, but
-# they must survive the filter, otherwise a degraded run would look like a
-# normal one with nothing wrong.
+# Raised by this module, not the model - must survive the flag filter below.
 SYSTEM_RISK_FLAGS = {"llm_unavailable"}
 
 
@@ -62,15 +60,12 @@ def build_decision(
     flags = list(outcome.risk_flags)
     for raw in _clean_list(judgement.get("additional_risk_flags"), MAX_EXTRA_FLAGS):
         name = _flag_name(raw)
-        # Closed vocabulary. Anything invented is dropped rather than shown to a
-        # reviewer as if it were a real finding.
+        # closed vocabulary - invented flags are dropped, not shown as real findings
         if name in set(EXTRA_RISK_FLAGS) | SYSTEM_RISK_FLAGS and name not in flags:
             flags.append(name)
 
     missing = list(outcome.missing_information)
-    # The deterministic check against policy section 1 decides whether the
-    # request is complete. The model may only add detail to a request that is
-    # already known to be incomplete; it cannot declare a complete one lacking.
+    # only the policy-1 check can mark a request incomplete; the model can just add detail
     if outcome.missing_information:
         for item in _clean_list(judgement.get("additional_missing_information"), MAX_EXTRA_MISSING):
             if item not in missing:

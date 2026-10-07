@@ -14,8 +14,7 @@ def handle_request(request_id: str, architecture: Architecture = "single") -> Pr
       staged - an analyst agent gathers evidence into a structured pack, and a
                separate reviewer agent decides from that pack alone.
     """
-    # Fail here, before any work, if the project is not configured. Without this
-    # the run would degrade to a rules-only answer and look like a pass.
+    # fail fast if no key - otherwise a run quietly degrades and looks like a pass
     get_api_key()
 
     if architecture == "staged":

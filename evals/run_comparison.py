@@ -31,9 +31,7 @@ from src.solution import handle_request
 
 RESULTS_DIR = ROOT / "evals" / "results"
 
-# Evidence may also be written by the orchestrator itself, for example when it
-# notes that it had to run a check the agent skipped. Everything else has to
-# name a tool that really ran.
+# orchestrator notes are allowed too; everything else must name a real tool
 NON_TOOL_SOURCES = {"orchestrator"}
 
 

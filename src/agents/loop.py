@@ -11,8 +11,7 @@ from src.config import MAX_TOOL_STEPS
 from src.llm import LlmCounter, chat
 from src.tools import TOOL_SCHEMAS, Toolbox
 
-# Tool results can be long. Trim them so a big catalogue reply does not eat the
-# whole context window.
+# trim long tool results so they don't eat the whole context window
 MAX_TOOL_RESULT_CHARS = 3000
 
 
@@ -25,8 +24,7 @@ def run_tool_loop(
     """Let the model call tools until it stops asking. Returns its closing text."""
     final_text = ""
     for _ in range(max_steps):
-        # The closing summary is not used downstream, so there is no reason to
-        # let the model write a long one. This is most of the latency saving.
+        # the closing summary isn't used downstream - keeping it short saves most of the latency
         message = chat(messages, counter, tools=TOOL_SCHEMAS, max_tokens=400)
         tool_calls = message.tool_calls or []
 

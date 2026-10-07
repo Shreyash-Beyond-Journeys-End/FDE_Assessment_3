@@ -8,9 +8,7 @@ from __future__ import annotations
 import os
 from datetime import date
 
-# Policy reference date from data/procurement_policy.md.
-# All date maths (review expiry, staleness) must use this and never date.today(),
-# otherwise the answers would drift every day the grader runs the project.
+# Reference date from data/procurement_policy.md - never use date.today() here.
 SNAPSHOT_DATE = date(2026, 9, 30)
 
 # A vendor security assessment stays current for this long (policy section 5).
@@ -19,8 +17,7 @@ SECURITY_REVIEW_VALID_DAYS = 365
 DEFAULT_MODEL = "Qwen/Qwen2.5-72B-Instruct"
 DEFAULT_BASE_URL = "https://router.huggingface.co/v1"
 
-# Tool loop limits. Kept small on purpose: the deterministic rules do the heavy
-# lifting, so the agent does not need many turns.
+# Kept small on purpose - the rules do the heavy lifting, not the agent.
 MAX_TOOL_STEPS = 8
 LLM_TIMEOUT_SECONDS = 60.0
 LLM_MAX_RETRIES = 2

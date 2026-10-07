@@ -79,8 +79,7 @@ class HumanAuthorityTests(unittest.TestCase):
 
 class NoHardcodingTests(unittest.TestCase):
     def test_no_request_id_appears_in_the_implementation(self):
-        # Hidden cases use different ids, so branching on one would be cheating
-        # and would also silently break.
+        # hidden cases use different ids - branching on one here would be cheating
         pattern = re.compile(r"REQ-\d{3,}")
         for path in SRC.rglob("*.py"):
             found = pattern.findall(code_only(path))
@@ -97,8 +96,6 @@ class NoHardcodingTests(unittest.TestCase):
 
 class SnapshotDateTests(unittest.TestCase):
     def test_the_implementation_never_reads_the_computer_clock(self):
-        # Date checks must use the policy snapshot date, or the answers would
-        # change every day the project is run.
         banned = ["date.today()", "datetime.now()", "datetime.today()", "time.localtime()"]
         for path in SRC.rglob("*.py"):
             text = code_only(path)
@@ -107,8 +104,7 @@ class SnapshotDateTests(unittest.TestCase):
 
     def test_expiry_is_measured_from_the_snapshot_date(self):
         toolbox = Toolbox()
-        # SignalWatch's review is 2025-07-01, which is 456 days before the
-        # 2026-09-30 snapshot and therefore expired.
+        # SignalWatch's review date is 2025-07-01, 456 days before the snapshot
         record = toolbox.run("lookup_vendor_registry", {"vendor_name": "SignalWatch"})
         self.assertEqual(record["security_review_age_days"], 456)
         self.assertEqual(record["security_review_state"], "expired")

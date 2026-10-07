@@ -1,9 +1,5 @@
-"""Builds the request context and guarantees a minimum evidence set.
-
-The agent decides what to investigate and in what order. But six checks are
-required by the policy for every single request, so if the model skips one the
-orchestrator runs it anyway. That keeps the rules engine from ever having to
-work with half the picture.
+"""Builds the request context and makes sure the 6 required checks always run,
+even if the agent skips one.
 """
 from __future__ import annotations
 
@@ -74,8 +70,7 @@ def ensure_minimum_evidence(request: dict, toolbox: Toolbox, requester: dict | N
             "annual_cost_usd": request.get("annual_cost_usd"),
         })
     elif toolbox.was_called("check_budget"):
-        # The model sometimes calls this with a cost it made up or left out.
-        # Re-run it with the real figures so the budget maths is trustworthy.
+        # re-run with the real figures if the model passed a wrong cost or department
         current = toolbox.latest.get("check_budget", {})
         wrong_dept = department and current.get("department") != department
         wrong_cost = current.get("annual_cost_usd") != request.get("annual_cost_usd")

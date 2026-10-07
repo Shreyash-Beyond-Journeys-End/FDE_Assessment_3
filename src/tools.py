@@ -1,11 +1,8 @@
-"""The tools the copilot can call.
+"""Tools the copilot can call.
 
-Seven tools. Six of them are plain Python over the CSV/markdown data and do no
-model work at all; only vendor_risk_tool leaves the process, and it talks to the
-mock vendor-risk service.
-
-Every tool returns JSON-safe data and records itself in the Toolbox, so later on
-we can prove each piece of evidence came from a tool that actually ran.
+8 tools, 7 of them plain Python over local data. Only vendor_risk_tool makes a
+network call. Every call is logged in the Toolbox, so evidence can be traced
+back to the tool that produced it.
 """
 from __future__ import annotations
 
@@ -106,8 +103,7 @@ def search_software_catalog(
 
         vendor_hit = bool(wanted_vendor) and row_vendor == wanted_vendor
         category_hit = bool(wanted_category) and row_category == wanted_category
-        # "TaskFlow Pro" should match the catalogue entry "TaskFlow", and the
-        # other way round, so compare both directions.
+        # match "TaskFlow Pro" against catalogue entry "TaskFlow" and vice versa
         product_hit = bool(wanted_product) and (
             row_product in wanted_product or wanted_product in row_product
         )

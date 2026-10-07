@@ -1,13 +1,9 @@
-"""Deterministic policy engine.
+"""Deterministic policy engine - the "code" layer.
 
-This is the "CODE" part of the AI / CODE / HUMAN split. Every rule here comes
-straight out of data/procurement_policy.md and is plain Python, so it gives the
-same answer on every run.
-
-The model never gets to change anything this module produces. The approvals are
-a straight policy mapping, so the model cannot touch them at all. It may make
-the recommended action stricter, add a risk flag from a fixed list, and write
-the wording. The floor is set here.
+Every rule here comes from data/procurement_policy.md, in plain Python, so it
+gives the same answer every run. Approvals come only from this module; the
+model can make the action stricter and add a flag from a fixed list, nothing
+more.
 """
 from __future__ import annotations
 
@@ -49,8 +45,7 @@ APPROVAL_ORDER = [
     "Legal",
 ]
 
-# Recommended actions, weakest first. The rules set a floor on this list and the
-# model is only allowed to move up it, never down.
+# Weakest first. The model can only move up this list, never down.
 ACTIONS = [
     "proceed_to_approval",
     "review_existing_tool_first",
@@ -59,9 +54,7 @@ ACTIONS = [
     "hold_do_not_proceed",
 ]
 
-# The model may add a flag, but only from this fixed list. A free-text flag field
-# produced noise like "budget_verification_required" on requests where the budget
-# check had already passed, so the vocabulary is closed on purpose.
+# Closed vocabulary - a free-text flag field let the model invent noisy flags.
 EXTRA_RISK_FLAGS = [
     "unclear_business_justification",
     "unused_existing_capacity",
@@ -281,8 +274,7 @@ def _check_overlap(catalog: dict | None, request: dict, outcome: RuleOutcome,
     outcome.add_flag("existing_tool_overlap")
     outcome.raise_action("review_existing_tool_first")
 
-    # Policy section 8: an AI tool bought for low-risk work is not automatically
-    # cleared for a more sensitive data class.
+    # Policy 8: a tool approved for limited use isn't cleared for a more sensitive data class.
     data_level = _norm(request.get("data_access_level"))
     if "limited" in _norm(top.get("status")) and data_level in SENSITIVE_DATA_LEVELS:
         outcome.evidence.append(_policy_evidence(
@@ -346,8 +338,7 @@ def _check_vendor(registry: dict | None, risk: dict | None, request: dict,
         is_new = True
 
     if risk is None:
-        # The external check did not produce a result at all. Policy section 10
-        # says that is missing evidence, not a quiet pass.
+        # No result at all still counts as missing evidence (policy 10).
         outcome.evidence.append(EvidenceItem(
             source="lookup_vendor_registry",
             finding=(
@@ -405,10 +396,9 @@ def _check_vendor(registry: dict | None, risk: dict | None, request: dict,
         assessment_ok = False
         outcome.facts.append("Vendor is rated high risk by the external service.")
 
-    # Policy section 5: if the two sources disagree, do not quietly pick one.
-    # Compare what each source *claims*, not what we worked out ourselves. The
-    # registry can still say "Approved" while the risk service says "expired",
-    # and that disagreement is the thing a human needs to see.
+    # Policy 5: compare what each source *claims*, not what we worked out. The
+    # registry can still say "Approved" while the API says "expired" - that
+    # disagreement is the thing a human needs to see.
     if registry is not None and registry.get("found"):
         registry_claim = _claim(_norm(registry.get("security_status")))
         api_claim = _claim(api_status)

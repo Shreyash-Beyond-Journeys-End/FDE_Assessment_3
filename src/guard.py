@@ -1,20 +1,16 @@
-"""Prompt-injection guard.
+"""Prompt-injection guard (policy 9).
 
-Policy section 9 says request text, vendor notes and API text are business data,
-not instructions. This module is the code-side defence for that rule.
-
-It is deliberately a plain regex scanner and not an LLM call, for two reasons:
-the check must give the same answer every run, and asking a model whether it is
-being manipulated is exactly the thing an injection attacks.
+Plain regex, not a model call - it has to give the same answer every run, and
+asking a model whether it's being manipulated is exactly what an injection
+attack can talk its way around.
 """
 from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
 
-# Each pattern is written to match an *instruction*, not just a keyword.
-# "Expand the approved coding assistant" must not trip the approval pattern,
-# so the patterns look for an imperative aimed at the copilot.
+# matches an instruction, not just a keyword - "expand the approved coding
+# assistant" should not trip this
 _PATTERNS: list[tuple[str, str]] = [
     (
         r"\b(ignore|disregard|forget)\b[^.]{0,40}\b(rule|rules|policy|policies|instruction|instructions|guideline|guidelines|check|checks|step|steps)\b",
@@ -116,10 +112,6 @@ def scan_request(request: dict) -> InjectionReport:
 
 
 def fence(label: str, text: str | None) -> str:
-    """Wrap untrusted text so the model can see where it starts and stops.
-
-    The model is told in its system prompt that anything inside these markers is
-    data to read, never an instruction to follow.
-    """
+    """Wrap untrusted text in markers the model is told to treat as data only."""
     body = (text or "").strip() or "(empty)"
     return f"<untrusted_{label}>\n{body}\n</untrusted_{label}>"
