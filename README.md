@@ -224,9 +224,6 @@ Full memo: [`docs/DECISION_MEMO.md`](docs/DECISION_MEMO.md).
 
 ## Assumptions
 
-<details>
-<summary>Click to expand (6 points)</summary>
-
 - Policy reference date (`2026-09-30`) is used for every date check. Nothing reads the system clock — a test fails if it ever does.
 - Overlap with an existing tool is a flag, not a rejection. Even an obvious duplicate still goes through normal approval with the existing option shown.
 - Approvals come only from the threshold table and policy triggers. The model cannot add or remove one.
@@ -236,12 +233,7 @@ Full memo: [`docs/DECISION_MEMO.md`](docs/DECISION_MEMO.md).
 
 Full list: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-</details>
-
 ## Known limitations
-
-<details>
-<summary>Click to expand (7 points)</summary>
 
 - Most latency is the hosted model thinking, not the code — the rules engine itself runs in about 2ms.
 - The model's exact wording isn't identical run to run, even though the decision, approvals, and flags are.
@@ -251,12 +243,7 @@ Full list: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 - Only tested against one model. Unverified how these prompts hold up against a weaker one.
 - Hidden test cases likely use vendors/departments outside this dataset. The code doesn't crash on an unknown record, but this wasn't verified against the real hidden set.
 
-</details>
-
 ## Issues fixed in the starter pack
-
-<details>
-<summary>Click to expand (6 points)</summary>
 
 - `tests/` had no `__init__.py`, so `python -m unittest discover -s tests` failed with "Start directory is not importable." Added one.
 - `.gitignore` excluded `evals/results_*.csv`, but committed results are a required deliverable. Removed that line.
@@ -265,45 +252,38 @@ Full list: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 - `run_local.py` started the UI even with no API key set, so the first failure appeared on click. It now checks and warns at startup.
 - `app.py` was a bare scaffold dumping raw JSON. Replaced with a real UI — request details, evidence panel, recommendation, human review queue.
 
-</details>
-
 ## Repository layout
 
-<details>
-<summary>Click to expand</summary>
-
 ```
-app.py                   Streamlit UI
-run_local.py             starts the mock API + UI together
-verify_setup.py          pre-flight check, no API key needed
+app.py                 Streamlit UI
+run_local.py           starts the mock API + UI together
+verify_setup.py        pre-flight check, no API key needed
 
 src/
-  config.py              settings, policy snapshot date, key handling
-  guard.py                prompt-injection scanner
-  tools.py                all eight tools
-  rules.py                deterministic policy engine
-  evidence.py             builds request context, guarantees minimum checks run
-  decide.py               merges rules output with the model's judgement
-  llm.py                  model client (Hugging Face via the openai SDK)
-  prompts.py              system prompts for both architectures
-  policy_index.py         splits procurement_policy.md into sections
-  vendor_client.py        HTTP client for the mock vendor-risk service
+  config.py            settings, policy snapshot date, key handling
+  guard.py             prompt-injection scanner
+  tools.py             all eight tools
+  rules.py             deterministic policy engine
+  evidence.py          builds request context, guarantees minimum checks run
+  decide.py            merges rules output with the model's judgement
+  llm.py               model client (Hugging Face via the openai SDK)
+  prompts.py           system prompts for both architectures
+  policy_index.py      splits procurement_policy.md into sections
+  vendor_client.py     HTTP client for the mock vendor-risk service
   agents/
-    loop.py               shared tool-calling loop
-    single.py             architecture A
-    staged.py             architecture B
-  solution.py             handle_request(...) — entry point used by the evals
+    loop.py            shared tool-calling loop
+    single.py          architecture A
+    staged.py          architecture B
+  solution.py          handle_request(...), the entry point used by the evals
 
 evals/
-  run_public_evals.py     starter pack's own runner, untouched
-  quality_cases.json      my 10 hand-written test cases
-  run_comparison.py       runs both architectures against the cases, scores them
-  results/                committed output from my own runs
+  run_public_evals.py  starter pack's own runner, untouched
+  quality_cases.json   my 10 hand-written test cases
+  run_comparison.py    runs both architectures against the cases, scores them
+  results/             committed output from my own runs
 
-tests/                    48 tests, no API key required
+tests/                 48 tests, no API key required
 docs/
-  ARCHITECTURE.md         diagrams, full tool list, full assumptions list
-  DECISION_MEMO.md        500-word ship decision
+  ARCHITECTURE.md      diagrams, full tool list, full assumptions list
+  DECISION_MEMO.md     500-word ship decision
 ```
-
-</details>
